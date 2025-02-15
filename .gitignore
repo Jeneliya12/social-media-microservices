@@ -1,0 +1,20 @@
+# Ignore node_modules in all folders
+**/node_modules/
+
+# Ignore environment variables and other sensitive files
+.env
+.env.local
+.env.production
+.env.development
+
+# Ignore logs
+logs
+*.log
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+
+# Ignore build artifacts
+dist/
+build/
+identity-service/
