@@ -1,5 +1,5 @@
 const mongoose = require("mongoose");
-const argon2 = require("argone2");
+const argon2 = require("argon2");
 
 const userSchema = new mongoose.Schema({
     username : {
