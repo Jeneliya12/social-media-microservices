@@ -1,7 +1,7 @@
 const User = require("../models/User");
 const logger = require("../utils/logger");
 const { validateRegistration } = require("../utils/validation");
-const { accessToken, refreshToken } = require("../utils/generateToken");
+const generateTokens = require("../utils/generateTokens"); 
 
 // User registration
 const registerUser = async (req, res) => {
@@ -32,7 +32,7 @@ const registerUser = async (req, res) => {
         await user.save();
         logger.info("User saved successfully", user._id);
 
-        const tokens = generateTokens(user);
+        const tokens = await generateTokens(user); // ✅ Fixed function name & added `await`
 
         return res.status(201).json({
             success: true,
