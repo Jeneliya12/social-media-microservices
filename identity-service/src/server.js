@@ -21,10 +21,10 @@ mongoose
     .then(()=> logger.info("Connected to mongodb"))
     .catch((e)=>logger.error("MongoConnection Error", e));
 
-const redisClient = new Redis(process.env.REDIS_URL);
+    const redisClient = new Redis(process.env.REDIS_URL);
 
-redisClient.on("connect", () => console.log("✅ Redis connected successfully"));
-redisClient.on("error", (err) => console.error("❌ Redis connection error:", err));
+    redisClient.on("connect", () => console.log("✅ Redis connected successfully"));
+    redisClient.on("error", (err) => console.error("❌ Redis connection error:", err));
 
 //middleware
 app.use(helmet());

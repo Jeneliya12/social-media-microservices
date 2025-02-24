@@ -32,7 +32,7 @@ const registerUser = async (req, res) => {
         await user.save();
         logger.info("User saved successfully", user._id);
 
-        const tokens = await generateTokens(user); // ✅ Fixed function name & added `await`
+        const tokens = await generateTokens(user);
 
         return res.status(201).json({
             success: true,
