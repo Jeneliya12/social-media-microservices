@@ -128,7 +128,6 @@ const refreshTokenUser = async(req,res) => {
 }
 
 //logout
-
 const logoutUser = async(req, res) => {
     logger.info("Logout endpoint hit", e);
     try {
@@ -156,4 +155,4 @@ const logoutUser = async(req, res) => {
         });
     }
 }
-module.exports = { registerUser, loginUser, refreshTokenUser, logoutUser };
+module.exports = {registerUser, loginUser, refreshTokenUser, logoutUser};
