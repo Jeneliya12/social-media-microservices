@@ -26,7 +26,7 @@ const createPost = async(req,res) => {
             message  : "Post create successfully"
         })
     }catch(e){
-        logger.error("Error creating post", error)
+        logger.error("Error creating post", e)
         res.status(500).json({
             success : false,
             message : "Error creating post",
@@ -34,41 +34,53 @@ const createPost = async(req,res) => {
     }
 }
 
-const getAllPosts = async(req,res) => {
-    try{
-        const page = parseInt(req.query) || 1;
+const getAllPosts = async (req, res) => {
+    try {
+        const page = parseInt(req.query.page) || 1;
         const limit = parseInt(req.query.limit) || 10;
         const startIndex = (page - 1) * limit;
 
         const cacheKey = `posts:${page}:${limit}`;
-        const cachedPosts = await req.redisClient.get(cacheKey)
 
-        if(cachedPosts) {
-            return res.json(json.PARSE(cachedPosts))
+        // Check Redis for cached data
+        const cachedPosts = await req.redisClient.get(cacheKey);
+        if (cachedPosts) {
+            logger.info(`Serving posts from cache for page ${page}`);
+            return res.json(JSON.parse(cachedPosts));
         }
-        const posts = await Post.find({}).sort({createdAt : -1}).skip(startIndex).limit(limit)
 
-        const totalNoOfPosts = await Post.countDocuments()
+        // Fetch posts from MongoDB
+        const posts = await Post.find({})
+            .sort({ createdAt: -1 })
+            .skip(startIndex)
+            .limit(limit);
+
+        // Count total posts
+        const totalNoOfPosts = await Post.countDocuments();
 
         const result = {
             posts,
-            currentpage : page,
-            totalPages : Math.ceil(totalNoOfPosts/limit),
-            totalPosts : totalNoOfPosts
-        }
+            currentPage: page,
+            totalPages: Math.ceil(totalNoOfPosts / limit),
+            totalPosts: totalNoOfPosts
+        };
 
-        //save your posts in redis cache
-        await req.redisClient.setex(cacheKey, 300, JSON.stringify(result))
+        // Save posts in Redis cache for 5 minutes (300 seconds)
+        await req.redisClient.setex(cacheKey, 300, JSON.stringify(result));
 
-        res.json(result)
-    }catch(e){
-        logger.error("Error fetching post", error)
-        res.staus(500).json({
-            success : false,
-            message : "Error fetching post",
-        })
+        logger.info(`Posts fetched from DB and cached for page ${page}`);
+
+        res.json(result);
+    } catch (e) {
+        logger.error("Error fetching posts:", e);
+        res.status(500).json({
+            success: false,
+            message: "Error fetching posts",
+            error: e.message
+        });
     }
-}
+};
+
 
 const getPost = async(req,res) => {
     try{
