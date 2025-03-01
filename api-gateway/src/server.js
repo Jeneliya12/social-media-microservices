@@ -72,7 +72,7 @@ app.use("/v1/auth", proxy(process.env.IDENTITY_SERVICE_URL, {
 app.use("/v1/posts", validateToken, proxy(process.env.POST_SERVICE_URL, {
     ...proxyOptions,
     proxyReqOptDecorator : (proxyReqOpts, srcReq) => {
-        proxyReqOpts.headers["Content=Type"] = "application/json";
+        proxyReqOpts.headers["Content-Type"] = "application/json";
         proxyReqOpts.headers["x-user-id"] = srcReq.user.userId
 
         return proxyReqOpts;

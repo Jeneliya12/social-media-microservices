@@ -12,42 +12,46 @@ const app = express();
 const PORT = process.env.PORT || 3002;
 
 mongoose
-    .connect(process.env.MONGODB_URI)
-    .then(()=> logger.info("Connected to mongodb"))
-    .catch((e)=>logger.error("MongoConnection Error", e));
+    .connect(process.env.MONGODB_URI, { useNewUrlParser: true, useUnifiedTopology: true })
+    .then(() => logger.info("Connected to MongoDB"))
+    .catch((err) => {
+        logger.error("MongoDB Connection Error:", err);
+        process.exit(1); 
+    });
 
-    const redisClient = new Redis(process.env.REDIS_URL);
+const redisClient = new Redis(process.env.REDIS_URL);
 
-    redisClient.on("connect", () => console.log("Redis connected successfully"));
-    redisClient.on("error", (err) => console.error("Redis connection error:", err));
+redisClient.on("connect", () => logger.info("Redis connected successfully"));
+redisClient.on("error", (err) => {
+    logger.error("Redis connection error:", err);
+    process.exit(1); 
+});
 
-//middleware
+// Middleware
 app.use(helmet());
 app.use(cors());
 app.use(express.json());
 
 app.use((req, res, next) => {
-    logger.info(`Received ${req.method} request to ${req.url}`)
-    logger.info(`Request body, ${req.body}`)
+    logger.info(`Received ${req.method} request to ${req.url}`);
+    logger.info(`Request body: ${JSON.stringify(req.body)}`);
     next();
 });
 
-//implement ip based rate limiting for sensitive endpoints
-
-//routes => pass redisclient to routes
+// Routes => Pass redisClient to routes
 app.use("/api/posts", (req, res, next) => {
-    req.redisClient = redisClient
+    req.redisClient = redisClient;
     next();
 }, postRoutes);
 
-app.use(errorHandler)
-
-app.listen(PORT, () => {
-    logger.info(`Post service running on port ${PORT}`);
-});
-
-//unhandled promise rejection
+// Error Handling Middleware
+app.use(errorHandler);
 
 process.on("unhandledRejection", (reason, promise) => {
-    logger.error("Unhandlerd Rejection at", promise, "reason:", reason);
+    logger.error(`Unhandled Rejection at:`, promise, "Reason:", reason);
+});
+
+// Start the Server
+app.listen(PORT, () => {
+    logger.info(`Post service running on port ${PORT}`);
 });
